@@ -46,7 +46,7 @@ def get_similar_posts(X, post, posts):
         if current_post == post:
             continue
         curr_post_vectorized = X.getrow(i)
-        distance = distance_normalized(curr_post_vectorized, post_vectorized)
+        distance = distance_raw(curr_post_vectorized, post_vectorized)
         print "Post %i: '%s' with distance= %.2f" % (i, current_post, distance)
         if distance < shortest_dist:
             shortest_dist = distance
@@ -64,7 +64,7 @@ vectorizer = StemmedCountVectorizer(min_df=1)
 posts = load_data_from_dir("Building_ML_Systems_with_Python/chapter_03_Codes/data/toy", "\n")
 
 X_train = vectorizer.fit_transform(posts)
-post = "classification"
+post = "support vector machine"
 post_vec, best_post, distance = get_similar_posts(X_train, post, posts)
 
 print "\n"

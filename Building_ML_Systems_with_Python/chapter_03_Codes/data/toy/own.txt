@@ -1,7 +1,5 @@
-This is a toy post about machine learning. Actually, it contains not much interesting stuff.
-is there a crash course for feature selection algorithm
 Is there any potential left over or bug in this rocchio code?
-Matching template imge(scaled) to Main/larger image in Android
+Matching template image(scaled) to Main/larger image in Android
 Best way to implement a Bayes classifier?
 what can be done with log analysis / log mining?
 Using multiple Artificial intelligence techniques concurrently?
@@ -11,6 +9,12 @@ Is it necessary to normalize test data for Weka/LibSVM?
 what is a support vector machine?
 How can I regularize a linear regression with scipy's curve_fit?
 SVM Implementation in python
-Imaging databases store data. Imaging databases store data. Imaging databases store data.
-Imaging databases store data.
-Imaging databases provide storage capabilities.
+Support Vector Machine predicts wrong on small dataset
+Find Support Vector Machine parameters by inspection
+Support Vector Machine for Java?
+support vector machines in matlab
+python support vector machines
+Machine Learning - Support Vector Machines
+Support Vector Machine on Hadoop
+What are advantages of Artificial Neural Networks over Support Vector Machines?
+One-Class Support Vector Machines
