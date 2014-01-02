@@ -46,10 +46,10 @@ def get_similar_posts(X, post, posts):
         if current_post == post:
             continue
         curr_post_vectorized = X.getrow(i)
-        distance = distance_raw(curr_post_vectorized, post_vectorized)
-        print "Post %i: '%s' with distance= %.2f" % (i, current_post, distance)
-        if distance < shortest_dist:
-            shortest_dist = distance
+        dist = distance_normalized(curr_post_vectorized, post_vectorized)
+        print "Post %i: '%s' with distance= %.2f" % (i, current_post, dist)
+        if dist < shortest_dist:
+            shortest_dist = dist
             best_post_index = i
             best_post = current_post
 
@@ -65,10 +65,10 @@ posts = load_data_from_dir("Building_ML_Systems_with_Python/chapter_03_Codes/dat
 
 X_train = vectorizer.fit_transform(posts)
 post = "support vector machine"
-post_vec, best_post, distance = get_similar_posts(X_train, post, posts)
+post_vec, found_post, distance = get_similar_posts(X_train, post, posts)
 
 print "\n"
-print "The most similar post to '%s' is: '%s' with distance= %.2f" % (post, best_post, distance)
+print "The most similar post to '%s' is: '%s' with distance= %.2f" % (post, found_post, distance)
 
 
 # TODO: extract topics from stackoverflow and measure similarity to a given question
