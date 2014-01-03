@@ -1,18 +1,25 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 __author__ = 'nastra'
 
-from sklearn.feature_extraction.text import CountVectorizer
 from nltk.stem import SnowballStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 import os
+from sklearn import metrics
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import scale
+from sklearn import datasets
+from time import time
 
 
 english_stemmer = SnowballStemmer('english')
 
 
-class StemmedCountVectorizer(CountVectorizer):
+class StemmedTfIdfCountVectorizer(TfidfVectorizer):
     def build_analyzer(self):
-        analyzer = super(StemmedCountVectorizer, self).build_analyzer()
+        analyzer = super(StemmedTfIdfCountVectorizer, self).build_analyzer()
         return lambda doc: (english_stemmer.stem(w) for w in analyzer(doc))
 
 
@@ -20,11 +27,13 @@ def distance_raw(v1, v2):
     delta = v1 - v2
     return np.linalg.norm(delta.toarray())
 
+
 def distance_normalized(v1, v2):
     v1_normalized = v1 / np.linalg.norm(v1.toarray())
     v2_normalized = v2 / np.linalg.norm(v2.toarray())
     delta = v1_normalized - v2_normalized
     return np.linalg.norm(delta.toarray())
+
 
 def load_data_from_dir(directory, delimiter):
     files = [open(os.path.join(directory, f)).read() for f in os.listdir(directory)]
@@ -33,8 +42,10 @@ def load_data_from_dir(directory, delimiter):
         out.extend(f.split(delimiter))
     return out
 
+
 def get_similar_posts(X, post, posts):
     import sys
+
     shortest_dist = sys.maxint
     num_samples, num_features = X.shape
     post_vectorized = vectorizer.transform([post])
@@ -58,19 +69,122 @@ def get_similar_posts(X, post, posts):
     return None, None, None
 
 
+# the following things happen here:
+# 1. we tokenize the posts
+# 2. we throw away words that occur too often to be of any help by calculating tf–idf values
+# 3. we throw away words that occur so seldom that there is only a small chance that they occur in future posts
+# 4. we count the remaining words in the posts
+# vectorizer = StemmedTfIdfCountVectorizer(min_df=1, stop_words='english', decode_error='ignore')
+#posts = load_data_from_dir("Building_ML_Systems_with_Python/chapter_03_Codes/data/toy", "\n")
+#X_train = vectorizer.fit_transform(posts)
+#n_samples, n_features = X_train.shape
+#print n_samples
+#post = "how does machine learning work?"
+#post_vec, found_post, distance = get_similar_posts(X_train, post, posts)
+#
+#print "\n"
+#print "The most similar post to '%s' is: '%s' with distance= %.2f" % (post, found_post, distance)
+
+MLCOMP_DIR = "Building_ML_Systems_with_Python/chapter_03_Codes/data"
+categories = [
+    'comp.graphics', 'comp.os.ms-windows.misc', 'comp.sys.ibm.pc.hardware',
+    'comp.sys.ma c.hardware', 'comp.windows.x', 'sci.space']
+train_data = datasets.load_mlcomp("20news-18828", "train",
+                                  mlcomp_root=MLCOMP_DIR,
+                                  categories=categories)
+test_data = datasets.load_mlcomp("20news-18828", "test",
+                                 mlcomp_root=MLCOMP_DIR,
+                                 categories=categories)
+print("Number of training data posts:", len(train_data.filenames))
+print("Number of test data posts:", len(test_data.filenames))
+
+vectorizer = StemmedTfIdfCountVectorizer(min_df=10, max_df=0.5, stop_words='english', decode_error='ignore')
+
+X_train = vectorizer.fit_transform(train_data.data)
+X_test = vectorizer.transform(test_data.data)
+
+num_train_samples, num_train_features = X_train.shape
+num_test_samples, num_test_features = X_test.shape
+labels = train_data.target
+
+print("# training samples: %d, # training features: %d" % (num_train_samples, num_train_features))
+print("# test samples: %d, # test features: %d" % (num_test_samples, num_test_features))
+
+n_clusters = 50
 
 
-vectorizer = StemmedCountVectorizer(min_df=1)
-posts = load_data_from_dir("Building_ML_Systems_with_Python/chapter_03_Codes/data/toy", "\n")
+def bench_k_means(km, name, data):
+    print(120 * '=')
+    t0 = time()
+    km.fit(data)
+    print "Algorithm -- Time -- Homogeneity -- Completeness -- V-Measure -- Adjusted Rand Index -- Adjusted Mutual Info -- Silhouette Coefficient"
+    print(
+        '% 9s    %.2fs   %.3f           %.3f            %.3f         %.3f                   %.3f                    %.3f'
+        % (name, (time() - t0),
+           metrics.homogeneity_score(labels, km.labels_),
+           metrics.completeness_score(labels, km.labels_),
+           metrics.v_measure_score(labels, km.labels_),
+           metrics.adjusted_rand_score(labels, km.labels_),
+           metrics.adjusted_mutual_info_score(labels, km.labels_),
+           metrics.silhouette_score(data, km.labels_,
+                                    metric='euclidean',
+                                    sample_size=1000)))
+    print(120 * '=')
 
-X_train = vectorizer.fit_transform(posts)
-post = "support vector machine"
-post_vec, found_post, distance = get_similar_posts(X_train, post, posts)
 
-print "\n"
-print "The most similar post to '%s' is: '%s' with distance= %.2f" % (post, found_post, distance)
+def show_top10(classifier, vectorizer, categories):
+    feature_names = np.asarray(vectorizer.get_feature_names())
+    for i, category in enumerate(categories):
+        top10 = np.argsort(classifier.coef_[i])[-10:]
+        print("%s: %s" % (category, " ".join(feature_names[top10])))
+
+def show_similar_posts():
+    similar_indices = (kmeans.labels_ == new_post_label).nonzero()[0]
+
+    similar = []
+    for i in similar_indices:
+        dist = np.linalg.norm((new_post_vec - X_train[i]).toarray())
+        similar.append((dist, train_data.data[i]))
+
+    similar = sorted(similar)
+
+    show_at_1 = similar[0]
+    show_at_2 = similar[len(similar) / 2]
+    show_at_3 = similar[-1]
+
+    print(120 * '=')
+    print(show_at_1)
+    print(120 * '-')
+    print(show_at_2)
+    print(120 * '-')
+    print(show_at_3)
+    print(120 * '=')
 
 
-# TODO: extract topics from stackoverflow and measure similarity to a given question
+kmeans = KMeans(init='random', n_clusters=n_clusters, n_init=10)
+bench_k_means(kmeans, name="random", data=X_train)
+
+## in this case the seeding of the centers is deterministic, hence we run the
+## kmeans algorithm only once with n_init=1
+pca = PCA(n_components=n_clusters).fit(X_train.toarray())
+kmeans = KMeans(init=pca.components_, n_clusters=n_clusters, n_init=1)
+bench_k_means(kmeans, name="PCA-based", data=X_train)
+
+kmeans = KMeans(init='k-means++', n_clusters=n_clusters, n_init=10)
+bench_k_means(kmeans, name="k-means++", data=X_train)
+
+new_post = \
+    """Disk drive problems. Hi, I have a problem with my hard disk.
+After 1 year it is working only sporadically now.
+I tried to format it, but now it doesn't boot any more.
+Any ideas? Thanks.
+"""
+new_post_vec = vectorizer.transform([new_post])
+new_post_label = kmeans.predict(new_post_vec)[0]
+#show_top10(kmeans, vectorizer, train_data.target)
+#prediction = kmeans.predict(X_test)
+#print prediction
+
+show_similar_posts()
 
 
