@@ -9,7 +9,6 @@ import os
 from sklearn import metrics
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import scale
 from sklearn import datasets
 from time import time
 
@@ -88,7 +87,7 @@ def get_similar_posts(X, post, posts):
 MLCOMP_DIR = "Building_ML_Systems_with_Python/chapter_03_Codes/data"
 categories = [
     'comp.graphics', 'comp.os.ms-windows.misc', 'comp.sys.ibm.pc.hardware',
-    'comp.sys.ma c.hardware', 'comp.windows.x', 'sci.space']
+    'comp.sys.mac.hardware', 'comp.windows.x', 'sci.space']
 train_data = datasets.load_mlcomp("20news-18828", "train",
                                   mlcomp_root=MLCOMP_DIR,
                                   categories=categories)
@@ -138,7 +137,9 @@ def show_top10(classifier, vectorizer, categories):
         top10 = np.argsort(classifier.coef_[i])[-10:]
         print("%s: %s" % (category, " ".join(feature_names[top10])))
 
+
 def show_similar_posts():
+    # search for similar posts in the same category
     similar_indices = (kmeans.labels_ == new_post_label).nonzero()[0]
 
     similar = []
@@ -152,6 +153,8 @@ def show_similar_posts():
     show_at_2 = similar[len(similar) / 2]
     show_at_3 = similar[-1]
 
+    category = train_data.target_names
+    print("Showing similar posts from category: '" + str(new_post_label) + "' for post: '" + str(new_post) + "'")
     print(120 * '=')
     print(show_at_1)
     print(120 * '-')
@@ -180,10 +183,9 @@ I tried to format it, but now it doesn't boot any more.
 Any ideas? Thanks.
 """
 new_post_vec = vectorizer.transform([new_post])
-new_post_label = kmeans.predict(new_post_vec)[0]
-#show_top10(kmeans, vectorizer, train_data.target)
-#prediction = kmeans.predict(X_test)
-#print prediction
+prediction = kmeans.predict(new_post_vec)
+print prediction
+new_post_label = prediction[0]
 
 show_similar_posts()
 
