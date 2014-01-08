@@ -1,0 +1,20 @@
+Is there any potential left over or bug in this rocchio code?
+Matching template image(scaled) to Main/larger image in Android
+Best way to implement a Bayes classifier?
+what can be done with log analysis / log mining?
+Using multiple Artificial intelligence techniques concurrently?
+How to build a classification tree with only binary splits in each feature variable (preferably in R)?
+Why are they called Support Vector Machines ?
+Is it necessary to normalize test data for Weka/LibSVM?
+what is a support vector machine?
+How can I regularize a linear regression with scipy's curve_fit?
+SVM Implementation in python
+Support Vector Machine predicts wrong on small dataset
+Find Support Vector Machine parameters by inspection
+Support Vector Machine for Java?
+support vector machines in matlab
+python support vector machines
+Machine Learning - Support Vector Machines
+Support Vector Machine on Hadoop
+What are advantages of Artificial Neural Networks over Support Vector Machines?
+One-Class Support Vector Machines
