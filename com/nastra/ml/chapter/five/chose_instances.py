@@ -1,5 +1,11 @@
-import os
+# This code is supporting material for the book
+# Building Machine Learning Systems with Python
+# by Willi Richert and Luis Pedro Coelho
+# published by PACKT Publishing
+#
+# It is made available under the MIT License
 
+import os
 try:
     import ujson as json  # UltraJSON if available
 except:
@@ -9,16 +15,25 @@ from collections import defaultdict
 
 try:
     import enchant
+    speller = enchant.Dict("en_US")
+
 except:
-    print(
-        "Enchant is not installed. You can get it from http://packages.python.org/pyenchant/. Exitting...")
-    sys.exit(1)
+    print("""\
+Enchant is not installed, which is not a problem since spell correction features
+will not be used in the chapter. If, however, you want to experiment with them
+(highly encouraged!), you can get the library from http://packages.python.org/pyenchant/.
+""")
+    class EnchantMock:
+        def __init__(self):
+            pass
+        def check(self, word):
+            return True
+    speller = EnchantMock()
 
 from data import chosen, chosen_meta, filtered, filtered_meta
 
 filtered_meta = json.load(open(filtered_meta, "r"))
 
-speller = enchant.Dict("en_US")
 
 
 def misspelled_fraction(p):
@@ -39,7 +54,6 @@ def data(filename, col=None):
             yield data[col]
         else:
             yield data
-
 
 posts_to_keep = set()
 found_questions = 0
@@ -168,7 +182,7 @@ for ParentId, posts in filtered_meta.items():
                 negScore, negId = sorted(NegativeScoreIds)[0]
                 posts_to_keep.add(negId)
                 print("%i: %i/%i %i/%i" % (ParentId, posId,
-                                           posScore, negId, negScore))
+                      posScore, negId, negScore))
                 added = True
 
         if added:
