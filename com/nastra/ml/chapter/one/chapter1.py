@@ -71,7 +71,7 @@ def plot_models(x, y, models, fname, mx=None, ymax=None, xmin=None):
 colors = ['g', 'k', 'b', 'm', 'r']
 linestyles = ['-', '-.', '--', ':', '-']
 
-(x, y) = init_and_cleanup_data("Building_ML_Systems_with_Python/chapter_01_Codes/data/web_traffic.tsv", "\t")
+(x, y) = init_and_cleanup_data("data/web_traffic.tsv", "\t")
 #plot_data(x, y)
 
 # full=True gives additional info on the fitting process

@@ -1,3 +1,10 @@
+# This code is supporting material for the book
+# Building Machine Learning Systems with Python
+# by Willi Richert and Luis Pedro Coelho
+# published by PACKT Publishing
+#
+# It is made available under the MIT License
+
 import os
 
 try:
@@ -69,8 +76,11 @@ def fetch_posts(filename, with_index=True, line_count=-1):
         Text = Text.strip()
 
         if with_index:
+
             yield int(Id), Text
+
         else:
+
             yield Text
 
 
@@ -108,7 +118,8 @@ def plot_roc(auc_score, name, fpr, tpr):
     pylab.grid(True, linestyle='-', color='0.75')
     pylab.fill_between(tpr, fpr, alpha=0.5)
     pylab.plot(fpr, tpr, lw=1)
-    pylab.savefig(os.path.join(CHART_DIR, "roc_" + name.replace(" ", "_") + ".png"))
+    pylab.savefig(
+        os.path.join(CHART_DIR, "roc_" + name.replace(" ", "_") + ".png"))
 
 
 def plot_pr(auc_score, name, precision, recall, label=None):
@@ -200,7 +211,8 @@ def plot_bias_variance(data_sizes, train_errors, test_errors, name, title):
         data_sizes, test_errors, "--", data_sizes, train_errors, "b-", lw=1)
     pylab.legend(["train error", "test error"], loc="upper right")
     pylab.grid(True, linestyle='-', color='0.75')
-    pylab.savefig(os.path.join(CHART_DIR, "bv_" + name.replace(" ", "_") + ".png"), bbox_inches="tight")
+    pylab.savefig(
+        os.path.join(CHART_DIR, "bv_" + name.replace(" ", "_") + ".png"), bbox_inches="tight")
 
 
 def plot_k_complexity(ks, train_errors, test_errors):
@@ -213,4 +225,5 @@ def plot_k_complexity(ks, train_errors, test_errors):
         ks, test_errors, "--", ks, train_errors, "-", lw=1)
     pylab.legend(["train error", "test error"], loc="upper right")
     pylab.grid(True, linestyle='-', color='0.75')
-    pylab.savefig(os.path.join(CHART_DIR, "kcomplexity.png"), bbox_inches="tight")
+    pylab.savefig(
+        os.path.join(CHART_DIR, "kcomplexity.png"), bbox_inches="tight")

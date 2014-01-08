@@ -1,3 +1,10 @@
+# This code is supporting material for the book
+# Building Machine Learning Systems with Python
+# by Willi Richert and Luis Pedro Coelho
+# published by PACKT Publishing
+#
+# It is made available under the MIT License
+
 #
 # This script filters the posts and keeps those posts that are or belong
 # to a question that has been asked in 2011 or 2012.
@@ -5,7 +12,6 @@
 
 import os
 import re
-
 try:
     import ujson as json  # UltraJSON if available
 except:
@@ -17,16 +23,16 @@ from xml.etree import cElementTree as etree
 from collections import defaultdict
 
 from data import DATA_DIR
+from data import filtered
 
-
-filename = os.path.join(DATA_DIR, "posts-2011-12.xml")
-filename_filtered = os.path.join(DATA_DIR, "filtered.tsv")
+filename = os.path.join(DATA_DIR, "Posts.xml")
+filename_filtered = "filtered.tsv"
 
 q_creation = {}  # creation datetimes of questions
 q_accepted = {}  # id of accepted answer
 
-meta = defaultdict(
-    list)  # question -> [(answer Id, IsAccepted, TimeToAnswer, Score), ...]
+# question -> [(answer Id, IsAccepted, TimeToAnswer, Score), ...]
+meta = defaultdict(list)
 
 # regegx to find code snippets
 code_match = re.compile('<pre>(.*?)</pre>', re.MULTILINE | re.DOTALL)
@@ -56,7 +62,8 @@ def filter_html(s):
 
     link_count -= link_count_in_code
 
-    html_free_s = re.sub(" +", " ", tag_match.sub('', code_free_s)).replace("\n", "")
+    html_free_s = re.sub(
+        " +", " ", tag_match.sub('', code_free_s)).replace("\n", "")
 
     link_free_s = html_free_s
     for anchor in anchors:
@@ -67,19 +74,20 @@ def filter_html(s):
 
     return link_free_s, num_text_tokens, num_code_lines, link_count, num_images
 
-
 years = defaultdict(int)
 num_questions = 0
 num_answers = 0
 
+from itertools import imap
 
 def parsexml(filename):
     global num_questions, num_answers
 
     counter = 0
 
-    it = map(itemgetter(1),
+    it = imap(itemgetter(1),
              iter(etree.iterparse(filename, events=('start',))))
+
     root = next(it)  # get posts element
 
     for elem in it:
@@ -90,10 +98,6 @@ def parsexml(filename):
 
         if elem.tag == 'row':
             creation_date = dateparser.parse(elem.get('CreationDate'))
-
-            # import pdb;pdb.set_trace()
-            # if creation_date.year < 2011:
-            #    continue
 
             Id = int(elem.get('Id'))
             PostTypeId = int(elem.get('PostTypeId'))
@@ -137,18 +141,17 @@ def parsexml(filename):
             values = (Id, ParentId,
                       IsAccepted,
                       TimeToAnswer, Score,
-                      Text,
+                      Text.encode("utf-8"),
                       NumTextTokens, NumCodeLines, LinkCount, NumImages)
 
             yield values
 
             root.clear()  # preserve memory
 
-
 with open(os.path.join(DATA_DIR, filename_filtered), "w") as f:
-    for item in parsexml(filename):
-        line = "\t".join(map(str, item))
-        f.write(line.encode("utf-8") + "\n")
+    for values in parsexml(filename):
+        line = "\t".join(map(str, values))
+        f.write(line + "\n")
 
 with open(os.path.join(DATA_DIR, "filtered-meta.json"), "w") as f:
     json.dump(meta, f)
