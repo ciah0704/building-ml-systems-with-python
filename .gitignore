@@ -37,3 +37,4 @@ nosetests.xml
 
 .idea
 BuildingMachineLearningSystemsWithPython
+com/nastra/ml/chapter/05/data
