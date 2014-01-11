@@ -70,7 +70,26 @@ def print_and_plot_scores(scores, pr_scores, train_errrors, test_errors, name="N
     print("AVG Scores\tSTD Scores\tAVG PR Scores\tSTD PR Scores")
     print "%.3f\t\t%.3f\t\t%.3f\t\t\t%.3f\t" % summary
 
-    return np.mean(train_errors), np.mean(test_errors)
+    avg_train_err, avg_test_err = np.mean(train_errors), np.mean(test_errors)
+    print("AVG Training Error: %.3f  -- AVG Testing Error: %.3f" % (avg_train_err, avg_test_err))
+    return avg_train_err, avg_test_err
+
+
+def tweak_labels(labels, positive_sentiment_list):
+    """
+    We modify the labels by interpreting them as positive based on the positive sentiment list
+    """
+    if len(positive_sentiment_list) == 0:
+        return
+    pos = labels == positive_sentiment_list[0]
+    for sentiment in positive_sentiment_list[1:]:
+        pos |= labels == sentiment
+
+    labels = np.zeros(labels.shape[0])
+    labels[pos] = 1
+    labels = labels.astype(int)
+
+    return labels
 
 
 if __name__ == "__main__":
@@ -79,18 +98,42 @@ if __name__ == "__main__":
     for c in unique_classes:
         print("#%s tweets: %i" % (c, sum(Y_orig == c)))
 
+    print(120 * "#")
+    print "== Pos vs. neg =="
     pos_neg = np.logical_or(Y_orig == "positive", Y_orig == "negative")
     X = X_orig[pos_neg]
     Y = Y_orig[pos_neg]
-    Y = Y == "positive"
+    Y = tweak_labels(Y, ["positive"])
 
     pipeline = create_ngram_model()
-
     scores, precision_recall_scores, precisions, recalls, thresholds, test_errors, train_errors = train_model(pipeline,
                                                                                                               X, Y)
+    print_and_plot_scores(scores, precision_recall_scores, train_errors, test_errors, name="pos vs neg")
+    print(120 * "#")
 
-    avg_train_err, avg_test_err = print_and_plot_scores(scores, precision_recall_scores, train_errors, test_errors)
+    print "== Pos/neg vs. irrelevant/neutral =="
+    X = X_orig
+    Y = tweak_labels(Y_orig, ["positive", "negative"])
+    pipeline = create_ngram_model()
+    scores, precision_recall_scores, precisions, recalls, thresholds, test_errors, train_errors = train_model(pipeline,
+                                                                                                              X, Y)
+    print_and_plot_scores(scores, precision_recall_scores, train_errors, test_errors, name="sentiment vs rest")
+    print(120 * "#")
 
-    print("AVG Training Error: %.3f  -- AVG Testing Error: %.3f" % (avg_train_err, avg_test_err))
+    print "== Pos vs. rest =="
+    X = X_orig
+    Y = tweak_labels(Y_orig, ["positive"])
+    pipeline = create_ngram_model()
+    scores, precision_recall_scores, precisions, recalls, thresholds, test_errors, train_errors = train_model(pipeline,
+                                                                                                              X, Y)
+    print_and_plot_scores(scores, precision_recall_scores, train_errors, test_errors, name="pos vs rest")
+    print(120 * "#")
 
-
+    print "== Neg vs. rest =="
+    X = X_orig
+    Y = tweak_labels(Y_orig, ["negative"])
+    pipeline = create_ngram_model()
+    scores, precision_recall_scores, precisions, recalls, thresholds, test_errors, train_errors = train_model(pipeline,
+                                                                                                              X, Y)
+    print_and_plot_scores(scores, precision_recall_scores, train_errors, test_errors, name="neg vs rest")
+    print(120 * "#")
