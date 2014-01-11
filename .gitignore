@@ -36,5 +36,8 @@ nosetests.xml
 .pydevproject
 
 .idea
+**charts/
 BuildingMachineLearningSystemsWithPython
 com/nastra/ml/chapter/05/data
+com/nastra/ml/chapter/06/data/rawdata
+com/nastra/ml/chapter/06/twitterauth.py
