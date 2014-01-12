@@ -23,7 +23,7 @@ def create_ngram_model(params=None):
     clf = MultinomialNB()
     pipeline = Pipeline([('vect', tfidf_ngrams), ('clf', clf)])
     if params:
-        pipeline.set_params(params)
+        pipeline.set_params(**params)
     return pipeline
 
 
@@ -98,11 +98,30 @@ def grid_search_model(clf_factory, X, y):
 
 def get_best_model():
     """
-    we set the parameters of the pipeline components based on the suggestion of the previous grid search
+    we set the parameters of the pipeline components based on the suggestion of the previous grid search.
+
+    According to the output, the following parameters lead to the best model:
+
+    {'vect__ngram_range': (1, 2), 'vect__smooth_idf': False, 'vect__sublinear_tf': True,
+    'vect__binary': False, 'vect__min_df': 1, 'vect__stop_words': None, 'vect__use_idf': False, 'clf__alpha': 0.03}
     """
-    params = None
-    pipeline = create_ngram_model(params)
-    return pipeline
+    params = dict(vect__ngram_range=(1, 2),
+                  vect__min_df=1,
+                  vect__smooth_idf=False,
+                  vect__stop_words=None,
+                  vect__use_idf=False,
+                  vect__sublinear_tf=True,
+                  vect__binary=True,
+                  clf__alpha=0.03)
+    clf = create_ngram_model(params)
+    return clf
+
+
+def train_and_evaluate_tuned_model(X, Y, name):
+    clf = get_best_model()
+    scores, precision_recall_scores, precisions, recalls, thresholds, test_errors, train_errors = train_model(
+        clf, X, Y)
+    print_and_plot_scores(scores, precision_recall_scores, train_errors, test_errors, precisions, recalls, name)
 
 
 def show_all_scores():
@@ -118,29 +137,26 @@ def show_all_scores():
     Y = Y_orig[pos_neg]
     Y = tweak_labels(Y, ["positive"])
 
-    #train_model(get_best_model(), X, Y, name="pos vs neg")
+    # best_clf, best_score, best_params = grid_search_model(create_ngram_model, X, Y)
+    train_and_evaluate_tuned_model(X, Y, name="pos vs neg (tuned)")
     print(120 * "#")
 
     print "== Pos/neg vs. irrelevant/neutral =="
     X = X_orig
     Y = tweak_labels(Y_orig, ["positive", "negative"])
-    #train_and_evaluate_with_grid_search(X, Y, name="sentiment vs rest")
-    best_clf, best_score, best_params = grid_search_model(create_ngram_model, X, Y)
-    print best_clf
-    print best_score
-    print best_params
+    train_and_evaluate_tuned_model(X, Y, name="sentiment vs rest (tuned)")
     print(120 * "#")
 
     print "== Pos vs. rest =="
     X = X_orig
     Y = tweak_labels(Y_orig, ["positive"])
-    #train_and_evaluate_with_grid_search(X, Y, name="pos vs rest")
+    train_and_evaluate_tuned_model(X, Y, name="pos vs rest (tuned)")
     print(120 * "#")
 
     print "== Neg vs. rest =="
     X = X_orig
     Y = tweak_labels(Y_orig, ["negative"])
-    #train_and_evaluate_with_grid_search(X, Y, name="neg vs rest")
+    train_and_evaluate_tuned_model(X, Y, name="neg vs rest (tuned)")
     print(120 * "#")
 
 
