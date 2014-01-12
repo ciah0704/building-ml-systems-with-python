@@ -11,15 +11,20 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import Pipeline
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.cross_validation import ShuffleSplit
-from sklearn.metrics import precision_recall_curve, auc
+from sklearn.metrics import precision_recall_curve, auc, f1_score
 from utils import plot_pr
+from sklearn.grid_search import GridSearchCV
+from sentiment_analysis_tweets_example import tweak_labels, train_and_evaluate, show_all_scores
 import numpy as np
 
 
-def create_ngram_model():
+def create_ngram_model(params=None):
     tfidf_ngrams = TfidfVectorizer(ngram_range=(1, 3), analyzer="word", binary=False)
     clf = MultinomialNB()
-    return Pipeline([('vect', tfidf_ngrams), ('clf', clf)])
+    pipeline = Pipeline([('vect', tfidf_ngrams), ('clf', clf)])
+    if params:
+        pipeline.set_params(params)
+    return pipeline
 
 
 def train_model(clf_factory, X, Y):
@@ -58,12 +63,11 @@ def train_model(clf_factory, X, Y):
     return scores, precision_recall_scores, precisions, recalls, thresholds, test_errors, train_errors
 
 
-def print_and_plot_scores(scores, pr_scores, train_errrors, test_errors, name="NaiveBayes ngram"):
+def print_and_plot_scores(scores, pr_scores, train_errors, test_errors, precisions, recalls, name="NaiveBayes ngram"):
     scores_to_sort = pr_scores
     median = np.argsort(scores_to_sort)[len(scores_to_sort) / 2]
 
-    plot_pr(pr_scores[median], name, "01", precisions[median],
-            recalls[median], label=name)
+    plot_pr(pr_scores[median], name, "01", precisions[median], recalls[median], label=name)
 
     summary = (np.mean(scores), np.std(scores),
                np.mean(pr_scores), np.std(pr_scores))
@@ -75,24 +79,33 @@ def print_and_plot_scores(scores, pr_scores, train_errrors, test_errors, name="N
     return avg_train_err, avg_test_err
 
 
-def tweak_labels(labels, positive_sentiment_list):
+def grid_search_model(clf_factory, X, y):
+    cv = ShuffleSplit(n=len(X), n_iter=10, test_size=0.3, indices=True, random_state=0)
+
+    param_grid = dict(vect__ngram_range=[(1, 1), (1, 2), (1, 3)],
+                      vect__min_df=[1, 2],
+                      vect__smooth_idf=[False, True],
+                      vect__stop_words=[None, "english"],
+                      vect__use_idf=[True, False],
+                      vect__sublinear_tf=[True, False],
+                      vect__binary=[True, False],
+                      clf__alpha=[0, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5, 1], )
+
+    grid_search = GridSearchCV(clf_factory(), param_grid=param_grid, cv=cv, score_func=f1_score, verbose=10)
+    grid_search.fit(X, y)
+    return grid_search.best_estimator_, grid_search.best_score_, grid_search.best_params_
+
+
+def get_best_model():
     """
-    We modify the labels by interpreting them as positive based on the positive sentiment list
+    we set the parameters of the pipeline components based on the suggestion of the previous grid search
     """
-    if len(positive_sentiment_list) == 0:
-        return
-    pos = labels == positive_sentiment_list[0]
-    for sentiment in positive_sentiment_list[1:]:
-        pos |= labels == sentiment
-
-    labels = np.zeros(labels.shape[0])
-    labels[pos] = 1
-    labels = labels.astype(int)
-
-    return labels
+    params = None
+    pipeline = create_ngram_model(params)
+    return pipeline
 
 
-if __name__ == "__main__":
+def show_all_scores():
     X_orig, Y_orig = load_sanders_data()
     unique_classes = np.unique(Y_orig)
     for c in unique_classes:
@@ -105,35 +118,31 @@ if __name__ == "__main__":
     Y = Y_orig[pos_neg]
     Y = tweak_labels(Y, ["positive"])
 
-    pipeline = create_ngram_model()
-    scores, precision_recall_scores, precisions, recalls, thresholds, test_errors, train_errors = train_model(pipeline,
-                                                                                                              X, Y)
-    print_and_plot_scores(scores, precision_recall_scores, train_errors, test_errors, name="pos vs neg")
+    #train_model(get_best_model(), X, Y, name="pos vs neg")
     print(120 * "#")
 
     print "== Pos/neg vs. irrelevant/neutral =="
     X = X_orig
     Y = tweak_labels(Y_orig, ["positive", "negative"])
-    pipeline = create_ngram_model()
-    scores, precision_recall_scores, precisions, recalls, thresholds, test_errors, train_errors = train_model(pipeline,
-                                                                                                              X, Y)
-    print_and_plot_scores(scores, precision_recall_scores, train_errors, test_errors, name="sentiment vs rest")
+    #train_and_evaluate_with_grid_search(X, Y, name="sentiment vs rest")
+    best_clf, best_score, best_params = grid_search_model(create_ngram_model, X, Y)
+    print best_clf
+    print best_score
+    print best_params
     print(120 * "#")
 
     print "== Pos vs. rest =="
     X = X_orig
     Y = tweak_labels(Y_orig, ["positive"])
-    pipeline = create_ngram_model()
-    scores, precision_recall_scores, precisions, recalls, thresholds, test_errors, train_errors = train_model(pipeline,
-                                                                                                              X, Y)
-    print_and_plot_scores(scores, precision_recall_scores, train_errors, test_errors, name="pos vs rest")
+    #train_and_evaluate_with_grid_search(X, Y, name="pos vs rest")
     print(120 * "#")
 
     print "== Neg vs. rest =="
     X = X_orig
     Y = tweak_labels(Y_orig, ["negative"])
-    pipeline = create_ngram_model()
-    scores, precision_recall_scores, precisions, recalls, thresholds, test_errors, train_errors = train_model(pipeline,
-                                                                                                              X, Y)
-    print_and_plot_scores(scores, precision_recall_scores, train_errors, test_errors, name="neg vs rest")
+    #train_and_evaluate_with_grid_search(X, Y, name="neg vs rest")
     print(120 * "#")
+
+
+if __name__ == "__main__":
+    show_all_scores()
