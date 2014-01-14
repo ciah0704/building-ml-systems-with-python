@@ -2,7 +2,7 @@ __author__ = 'nastra'
 #
 # This script trains multinomial Naive Bayes on the tweet corpus
 # to find two different results:
-# - How well can we distinguis positive from negative tweets?
+# - How well can we distinguish positive from negative tweets?
 # - How well can we detect whether a tweet contains sentiment at all?
 #
 
@@ -14,7 +14,7 @@ from sklearn.cross_validation import ShuffleSplit
 from sklearn.metrics import precision_recall_curve, auc, f1_score
 from utils import plot_pr
 from sklearn.grid_search import GridSearchCV
-from sentiment_analysis_tweets_example import tweak_labels, train_and_evaluate, show_all_scores
+from sentiment_analysis_tweets_example import tweak_labels, show_all_scores
 import numpy as np
 
 

@@ -1,0 +1,25 @@
+#irrelevant tweets: 397
+#negative tweets: 510
+#neutral tweets: 1929
+#positive tweets: 453
+########################################################################################################################
+== Pos vs. neg ==
+AVG Scores	STD Scores	AVG PR Scores	STD PR Scores
+0.812		0.022		0.890			0.021
+AVG Training Error: 0.001  -- AVG Testing Error: 0.188
+########################################################################################################################
+== Pos/neg vs. irrelevant/neutral ==
+AVG Scores	STD Scores	AVG PR Scores	STD PR Scores
+0.784		0.010		0.699			0.025
+AVG Training Error: 0.003  -- AVG Testing Error: 0.216
+########################################################################################################################
+== Pos vs. rest ==
+AVG Scores	STD Scores	AVG PR Scores	STD PR Scores
+0.883		0.013		0.532			0.029
+AVG Training Error: 0.003  -- AVG Testing Error: 0.117
+########################################################################################################################
+== Neg vs. rest ==
+AVG Scores	STD Scores	AVG PR Scores	STD PR Scores
+0.883		0.006		0.629			0.023
+AVG Training Error: 0.002  -- AVG Testing Error: 0.117
+########################################################################################################################
