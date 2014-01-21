@@ -52,7 +52,7 @@ if __name__ == "__main__":
     X, y, descr, featureNames = loadBostonData()
     #classifier = LinearRegression(normalize=True, fit_intercept=True)
     kfold = KFold(len(X), n_folds=10, shuffle=True)
-    
+
     # normalized Rigde seems to do best in this example
     for name, method in [
         ('elastic-net(.5)', ElasticNet(fit_intercept=True, alpha=0.5, normalize=True)),
@@ -66,9 +66,7 @@ if __name__ == "__main__":
             y_train = y[train]
             y_test = y[test]
 
-            #classifier.fit(X_train, y_train)
             method.fit(X_train, y_train)
-            #prediction = classifier.predict(X_test)
             prediction = method.predict(X_test)
             squaredError = mean_squared_error(y_test, prediction)
             squaredErrors += squaredError
