@@ -5,7 +5,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.cross_validation import KFold
 from sklearn.metrics import mean_squared_error
 from matplotlib import pyplot as plt
-from sklearn.linear_model import ElasticNet, Lasso, Ridge
+from sklearn.linear_model import ElasticNet, Lasso, Ridge, ElasticNetCV
 import numpy as np
 
 
@@ -76,3 +76,23 @@ if __name__ == "__main__":
         print('Method: {}'.format(name))
         print("Root Mean Squared Error: " + str(rmse))
         print("=" * 50)
+
+    print("=" * 80)
+    #elastic = ElasticNetCV(fit_intercept=True)
+    #squaredErrors = 0
+    #for train, test in kfold:
+    #    X_train = X[train]
+    #    X_test = X[test]
+    #    y_train = y[train]
+    #    y_test = y[test]
+    #
+    #    elastic.fit(X_train, y_train)
+    #    prediction = elastic.predict(X_test)
+    #    squaredError = mean_squared_error(y_test, prediction)
+    #    squaredErrors += squaredError
+    #
+    #rmse = np.sqrt(squaredErrors / len(kfold))
+    #print("=" * 50)
+    #print('Method: {}'.format(name))
+    #print("Root Mean Squared Error: " + str(rmse))
+    #print("=" * 50)
