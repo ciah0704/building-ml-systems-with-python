@@ -1,4 +1,4 @@
-building-ml-systems-with-python
-===============================
+Building Machine Learning Systems with Python
+=============================================
 
-Repository for the Book "Building Machine Learning Systems with Python"
+Some Python code to try out different approaches from the book "Building Machine Learning Systems with Python"
